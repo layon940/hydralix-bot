@@ -115,14 +115,17 @@ class UploadHandler:
                 speed = format_bytes(current / elapsed) if elapsed > 0 else "0 B"
                 eta = f"{(total - current) / (current / elapsed):.1f}s" if current > 0 else "∞"
 
-                await status_msg.edit_text(
-                    f"📥 Downloading...\n\n"
-                    f"**File:** {file_name}\n"
-                    f"**Progress:** {bar} {percentage:.1f}%\n"
-                    f"**Speed:** {speed}/s\n"
-                    f"**ETA:** {eta}\n\n"
-                    f"**Next:** {get_next_queue_item(db.get_queue())}"
-                )
+                try:
+                    await status_msg.edit_text(
+                        f"📥 Downloading...\n\n"
+                        f"**File:** {file_name}\n"
+                        f"**Progress:** {bar} {percentage:.1f}%\n"
+                        f"**Speed:** {speed}/s\n"
+                        f"**ETA:** {eta}\n\n"
+                        f"**Next:** {get_next_queue_item(db.get_queue())}"
+                    )
+                except Exception:
+                    pass
 
             file_path = await userbot.download_media(
                 item['file_id'],
@@ -132,6 +135,11 @@ class UploadHandler:
 
             if not file_path:
                 raise Exception("Failed to download file")
+
+            # Check file size (10GB limit)
+            file_size = os.path.getsize(file_path)
+            if file_size > 10 * 1024 * 1024 * 1024:  # 10GB
+                raise Exception("File exceeds 10GB limit")
 
             # Upload to Hydrax
             await status_msg.edit_text(f"📤 Uploading to Hydrax...")
@@ -186,14 +194,17 @@ class UploadHandler:
                                     speed = format_bytes(downloaded / elapsed) if elapsed > 0 else "0 B"
                                     eta = f"{(total_size - downloaded) / (downloaded / elapsed):.1f}s" if downloaded > 0 else "∞"
 
-                                    await status_msg.edit_text(
-                                        f"📥 Downloading...\n\n"
-                                        f"**File:** {file_name}\n"
-                                        f"**Progress:** {bar} {percentage:.1f}%\n"
-                                        f"**Speed:** {speed}/s\n"
-                                        f"**ETA:** {eta}\n\n"
-                                        f"**Next:** {get_next_queue_item(db.get_queue())}"
-                                    )
+                                    try:
+                                        await status_msg.edit_text(
+                                            f"📥 Downloading...\n\n"
+                                            f"**File:** {file_name}\n"
+                                            f"**Progress:** {bar} {percentage:.1f}%\n"
+                                            f"**Speed:** {speed}/s\n"
+                                            f"**ETA:** {eta}\n\n"
+                                            f"**Next:** {get_next_queue_item(db.get_queue())}"
+                                        )
+                                    except Exception:
+                                        pass
 
                         tmp_file.flush()
 
