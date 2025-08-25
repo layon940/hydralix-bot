@@ -10,7 +10,7 @@ from handlers.upload import UploadHandler
 from handlers.admin import AdminHandler
 from handlers.language import LanguageHandler
 from handlers.broadcast import BroadcastHandler
-from userbot import userbot, start_userbot, stop_userbot
+from userbot import start_userbot, stop_userbot
 from utils.helpers import get_next_queue_item
 
 # Load environment variables
@@ -201,10 +201,12 @@ async def cancel_command(client: Client, message: Message):
     user_queue = [item for item in queue if item['user_id'] == user_id]
     
     # Remove user's items from queue
-    for item in reversed(user_queue):  # Reverse to maintain indices
+    for item in reversed(user_queue):
         queue = db.get_queue()
-        index = next(i for i, q in enumerate(queue) if q == item)
-        db.remove_from_queue(index)
+        for i, q in enumerate(queue):
+            if q == item:
+                db.remove_from_queue(i)
+                break
     
     lang_str = get_lang_string(user_id, 'cancelled')
     await message.reply_text(lang_str)
